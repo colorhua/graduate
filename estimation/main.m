@@ -11,8 +11,8 @@ s=chirp(t1_max,f_low,tao,f_high);
 % s=cos(2*pi*0.5*10^6*t1_max);
 x=[s zeros(1,(length(s) - 1)*(N-1))];
 x_xing=conj(x);
-td_ini=1.7204*10^-5;
-fd_ini=128.2487;
+td_ini=2.3524e-05;
+fd_ini=44.4524;
 y=recreation(x, td_ini, fd_ini, fs_max);
 
 % NFFT=2^nextpow2(L);

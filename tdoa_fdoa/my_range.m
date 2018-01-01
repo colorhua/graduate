@@ -1,6 +1,6 @@
 close all; clear all; clc;
-f0 = 2*10^9;V=[150, 0];
-S0 = [-5,0]*10^3; S1 = [5,0]*10^3; X = [0,40]*10^3;
+f0 = 1*10^9;V=[150, 0];
+S0 = [-5,0]*10^3; S1 = [5,0]*10^3; X = [-40,40]*10^3;
 [delta_t, delta_fd]=tdoa_fdoa_param(S0, S1, X, V, f0)
 N = 1000; M = 100000;
 x = linspace(-M, M, N); y = linspace(-M, M, N);

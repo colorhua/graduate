@@ -1,0 +1,10 @@
+x=-10:0.1:10;
+% y=1./(1+exp(-x));
+% y=2*1./(1+exp(-2*x))-1;
+y=max(0,x);
+plot(x,y);
+grid on;
+xlabel('\itx');
+ylabel('\ity');
+title('ReLUº¯Êý');
+axis([-10,10,-1,10]);
