@@ -1,6 +1,6 @@
 clc;clear all;close all;
 fs_max=1*10^9;
-T_max=0.001;
+T_max=0.1;
 N=1;
 tao=T_max/N;
 t_max=0:1/fs_max:T_max;
@@ -15,17 +15,17 @@ td_ini=2.3524e-05;
 fd_ini=44.4524;
 y=recreation(x, td_ini, fd_ini, fs_max);
 
-% NFFT=2^nextpow2(L);
 NFFT=2^20;
 fs=1*10^6;
 td_max=3.5*10^-5;
 fd_max=2000;
-delta_t=1/fs;
-delta_f=fs/NFFT;
-f=fs/2*linspace(0,1,NFFT/2+1);
 x_xing_sample=resample(x_xing,fs,fs_max);
 y_sample=resample(y,fs,fs_max);
 L=length(x_xing_sample);
+% NFFT=2^nextpow2(L);
+delta_t=1/fs;
+delta_f=fs/NFFT;
+f=fs/2*linspace(0,1,NFFT/2+1);
 
 % y_tao=recreation(x, 0, 0, fs);
 % r=x_xing.*y_tao;
@@ -35,6 +35,7 @@ L=length(x_xing_sample);
 M=td_max/delta_t+1;
 CAF=zeros(NFFT/2+1,M);
 td_range=linspace(-td_max,0,M);
+tic;
 for i=1:M
    td=td_range(i);
    y_tao=recreation(y_sample, td, 0, fs);
@@ -42,7 +43,9 @@ for i=1:M
    R=fft(r,NFFT)/L;
    CAF(:,i)=2*abs(R(1:NFFT/2+1));
 end
+toc;
 % mesh(-td_range,f,CAF);
+tic;
 CAF_s=CAF(1:fd_max+1,:);
 f_s=f(1:fd_max+1);
 % mesh(-td_range,f_s,CAF_s);
@@ -60,3 +63,4 @@ fd_comp=(fd_N-1)*delta_f
 %     CAF_s(r+1,c+1) CAF_s(r+1,c) CAF_s(r+1,c-1)];
 choose_ambiguity_mat=CAF_s(r-1:r+1,c-1:c+1);
 [correct_td,correct_fd] = quadratic_surface_fitting(choose_ambiguity_mat, delta_t, delta_f, td_comp, fd_comp)
+toc;

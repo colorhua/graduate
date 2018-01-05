@@ -1,9 +1,9 @@
 close all; clear all; clc;
-f0 = 2*10^9;V=[150, 0];
+f0 = 1*10^9;V=[150, 0];
 S0 = [-5,0]*10^3; S1 = [5,0]*10^3; X = [0,10000];
 [delta_t, delta_fd] = tdoa_fdoa_param(S0, S1, X, V, f0);
-sigma_t = 2*10^-6;
-sigma_fd = 5;
+sigma_t = 10*10^-9;
+sigma_fd = 1;
 sigma_s = 5;
 sigma_v = 5;
 gdop=tdoa_fdoa_gdop(S0,S1,X,V,f0,sigma_t,sigma_fd,sigma_s,sigma_v)/1000
@@ -76,5 +76,4 @@ title('sigma_t=20ns,sigma_fd=2Hz,sigma_s=5m,sigma_v=5m/s,value of GDOP/km');
 % subplot(1,2,2)
 % [c,h] = contour(x/1000, y/1000, gdop/1000);
 % set(h,'ShowText','on','LevelList',[0:0.5:10]);
-% xlabel('x/km'); ylabel('y/km');
 % xlabel('x/km'); ylabel('y/km');
