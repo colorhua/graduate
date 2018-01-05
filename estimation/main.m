@@ -1,12 +1,12 @@
 clc;clear all;close all;
 fs_max=1*10^9;
-T_max=0.1;
+T_max=100*10^-3;
 N=1;
 tao=T_max/N;
 t_max=0:1/fs_max:T_max;
 t1_max=0:1/fs_max:tao;
-f_low = 100*10^3;
-f_high = 300*10^3;
+f_low = 10*10^3;
+f_high = 60*10^3;
 s=chirp(t1_max,f_low,tao,f_high);
 % s=cos(2*pi*0.5*10^6*t1_max);
 x=[s zeros(1,(length(s) - 1)*(N-1))];
