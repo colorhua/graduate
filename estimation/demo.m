@@ -52,11 +52,11 @@ s_a=chirp(t_a,f_low_a,T,f_high_a);
 SNR=20;
 s_d=resample(s_a,fs_d,fs_a);
 %% 用自己的函数加噪声
-[s_d_n,NOISE] = noisegen(s_d,SNR);
+NOISE = noisegen(s_d,SNR);
 fn_h=400*10^3;
 Wn=fn_h/(fs_d/2);
 [b,a]=butter(12,Wn);
-s_d_n=filter(b,a,s_d_n);
+% s_d_n=filter(b,a,s_d_n);
 NOISE_band=filter(b,a,NOISE);
 s_d_n=s_d+NOISE_band;
 snr=SNR_singlech(s_d,s_d_n);
