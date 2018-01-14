@@ -2,7 +2,7 @@ clc;clear all;close all;
 %% 生成原始信号
 fs_a=1*10^9;
 fs_d=1*10^6;
-T=100*10^-3;
+T=0.1;
 N=2;
 tao=T/N;
 t_a=0:1/fs_a:T;
@@ -16,7 +16,7 @@ s_a=chirp(tao_a,f_low_a,tao,f_high_a);
 s_a=[s_a zeros(1,(length(s_a) - 1)*(N-1))];
 y_a1=s_a;
 % td_ini=2.3524e-05;
-td_ini=78*10^-9;
+td_ini=0.03;
 fd_ini=44.4524;
 y_a2=recreation(s_a, td_ini, fd_ini, fs_a);
 y_d1=resample(y_a1,fs_d,fs_a);
@@ -55,35 +55,33 @@ Y_dn1=fft(y_dn1,Nf)/Nf;
 % f=fs_d/2*linspace(0,1,NF/2+1);
 % plot(f,abs(Y_dn1(1:NF/2+1)));
 Y_dn2=fft(y_dn2,Nf)/Nf;
-% Y_dn1=fftshift(Y_dn1);
-% Y_dn2=fftshift(Y_dn2);
 %% 每一路信号的功率谱
 R1=conj(Y_dn1).*Y_dn1;
 R2=conj(Y_dn2).*Y_dn2;
 %% 每一路信号的自相关函数
 r1=ifft(R1,Nf);
 r2=ifft(R2,Nf);
-r1=ifftshift(r1);
-r2=ifftshift(r2);
-r1_jiequ=r1(Nf/2+1-(L-1)/2:Nf/2+1+(L-1)/2);
-r2_jiequ=r2(Nf/2+1-(L-1)/2:Nf/2+1+(L-1)/2);
+% r1(find(r1==0))=;
 %% 对自相关函数进行M倍抽取
-fs_pie=1000;
+fs_pie=100;
 M=fs_d/fs_pie;
 % L_pie=Nf/M;
-r1_pie=downsample(r1_jiequ,M);
-r2_pie=downsample(r2_jiequ,M);
-% r1_pie=r1_jiequ;
-% r2_pie=r2_jiequ;
+r1_pie=downsample(r1,M);
+r2_pie=downsample(r2,M);
+% r1_pie=r1;
+% r2_pie=r2;
 %% 计算自相关函数之比
 kesi=r2_pie./r1_pie;
 %% 自相关函数补零
-delta_f=0.1;
-N_pie=2^nextpow2(fs_pie/delta_f);
-% N_pie=2^nextpow2(2*length(kesi)-1);
-kesi_L=length(kesi);
-kesi_pie=[kesi(1:(kesi_L+1)/2) zeros(1,N_pie-kesi_L) kesi((kesi_L+1)/2+1:kesi_L)];
-% kesi_pie=[kesi zeros(1,N_pie-length(kesi))];
+% delta_f=0.1;
+% N_pie=2^nextpow2(fs_pie/delta_f);
+% kesi_L=length(kesi);
+% if rem(kesi_L,2)==1
+%     kesi_L=kesi_L+1;
+% end
+% kesi_pie=[kesi(1:kesi_L/2) zeros(1,N_pie-kesi_L) kesi(kesi_L/2+1:kesi_L)];
+N_pie=2^nextpow2(2*length(kesi)-1);
+kesi_pie=[kesi zeros(1,N_pie-length(kesi))];
 % N_pie=512;
 %% 计算自相关函数的频谱
 Fai=fft(kesi_pie,N_pie)/N_pie;
