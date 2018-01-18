@@ -1,62 +1,66 @@
 clc;clear all;close all;
 %% 生成原始信号
 fs_a=1*10^9;
-fs_d=400*10^3;
-T=100*10^-3;
+fs_d=1*10^6;
+T=0.1;
 N=2;
 tao=T/N;
 t_a=0:1/fs_a:T;
 t_d=0:1/fs_d:T;
 tao_a=0:1/fs_a:tao;
 tao_d=0:1/fs_d:tao;
-B=10*10^3;
-f_low_a=0;
-f_high_a=B;
+B=100*10^3;
+f_low_a=B;
+f_high_a=f_low_a+B;
 k=B/tao;
 % s_a=chirp(tao_a,f_low_a,tao,f_high_a);
 s_a=exp(1j*2*pi*(f_low_a*tao_a+1/2*k*tao_a.^2));
 s_a=[s_a zeros(1,(length(s_a) - 1)*(N-1))];
 y_a1=s_a;
 % td_ini=2.3524e-05;
-td_ini=200*10^-9;
-fd_ini=329.08;
-s_a2=exp(1j*2*pi*((f_low_a+fd_ini)*tao_a+1/2*k*tao_a.^2));
-s_a2=[s_a2 zeros(1,(length(s_a2) - 1)*(N-1))];
-y_a2=recreation(s_a2, td_ini, 0, fs_a);
+td_ini=20000*10^-9;
+fd_ini=239.08;
+% s_a2=exp(1j*2*pi*((f_low_a+fd_ini)*tao_a+1/2*k*tao_a.^2));
+% s_a2=[s_a2 zeros(1,(length(s_a2) - 1)*(N-1))];
+y_a2=recreation(s_a, td_ini, fd_ini, fs_a);
+SNR=10;
+%% 信号采样
 y_d1=resample(y_a1,fs_d,fs_a);
 y_d2=resample(y_a2,fs_d,fs_a);
-% SNR=10;
-% %% 构造低通滤波器
-% Bn=100*10^3;
-% fn_h=Bn;
-% Wn=fn_h/(fs_d/2);
-% [b,a]=butter(8,Wn,'low');
-% %% 用自己的函数加噪声
-% % NOISE1 = noisegen(y_d1,SNR);
-% % NOISE2 = noisegen(y_d2,SNR);
-% %% 用wgn加噪声
-% y_d1_power=sum(abs(y_d1).^2)/length(y_d1);
-% y_d2_power=sum(abs(y_d2).^2)/length(y_d2);
-% NOISE1_power=y_d1_power / ( 10^(SNR/10) );
-% NOISE2_power=y_d2_power / ( 10^(SNR/10) );
-% NOISE1=wgn(1,length(y_d1),10*log10(NOISE1_power),'complex');
-% NOISE2=wgn(1,length(y_d2),10*log10(NOISE2_power),'complex');
-% %% 构造带限噪声
-% NOISE_band1=filter(b,a,NOISE1);
-% NOISE_band2=filter(b,a,NOISE2);
-% NOISE_band1=NOISE_band1*sqrt(NOISE1_power/(std(NOISE_band1)^2));
-% NOISE_band2=NOISE_band2*sqrt(NOISE2_power/(std(NOISE_band2)^2));
-% y_dn1=y_d1+NOISE_band1;
-% y_dn2=y_d2+NOISE_band2;
-% %% 构造带通通滤波器
-% B=10*10^3;
-% f_low_a=0;
-% f_high_a=B;
-% Wn=fn_h/(fs_d/2);
-% [b,a]=butter(8,Wn,'low');
+%% 构造低通滤波器
+Bn=400*10^3;
+fn_h=Bn;
+Wn=fn_h/(fs_d/2);
+[b,a]=butter(8,Wn,'low');
+%% 构造低通滤波器
+fd_max=500;
+Wn_fd=fd_max/(fs_d/2);
+[b_fd,a_fd]=butter(4,Wn_fd,'low');
+%% 用自己的函数加噪声
+% NOISE1 = noisegen(y_d1,SNR);
+% NOISE2 = noisegen(y_d2,SNR);
+%% 用wgn加噪声
+y_d1_power=sum(abs(y_d1).^2)/length(y_d1);
+y_d2_power=sum(abs(y_d2).^2)/length(y_d2);
+NOISE1_power=y_d1_power / ( 10^(SNR/10) );
+NOISE2_power=y_d2_power / ( 10^(SNR/10) );
+NOISE1=wgn(1,length(y_d1),10*log10(NOISE1_power),'complex');
+NOISE2=wgn(1,length(y_d2),10*log10(NOISE2_power),'complex');
+%% 构造带限噪声
+NOISE_band1=filter(b,a,NOISE1);
+NOISE_band2=filter(b,a,NOISE2);
+NOISE_band1=NOISE_band1*sqrt(NOISE1_power/(std(NOISE_band1)^2));
+NOISE_band2=NOISE_band2*sqrt(NOISE2_power/(std(NOISE_band2)^2));
+y_dn1=y_d1+NOISE_band1;
+y_dn2=y_d2+NOISE_band2;
+%% 构造带通通滤波器
+% Wn=[f_low_a f_high_a+1000]/(fs_d/2);
+% [b,a]=butter(8,Wn,'bandpass');
+% y_dn1=filter(b,a,y_dn1);
+% y_dn2=filter(b,a,y_dn2);
 %% 不加噪声
-y_dn1=y_d1;
-y_dn2=y_d2;
+% y_dn1=y_d1;
+% y_dn2=y_d2;
 % snr1=SNR_singlech(y_d1,y_dn1);
 % snr2=SNR_singlech(y_d2,y_dn2);
 % %% 计算频谱
@@ -88,26 +92,44 @@ r2_jiequ=xcorr(y_dn2);
 fs_pie=1000;
 M=fs_d/fs_pie;
 % L_pie=Nf/M;
-r1_pie=downsample(r1_jiequ,M);
-r2_pie=downsample(r2_jiequ,M);
+% r1_pie=downsample(r1_jiequ,M);
+% r2_pie=downsample(r2_jiequ,M);
 % r1_pie=r1_jiequ;
 % r2_pie=r2_jiequ;
 %% 计算自相关函数之比
-kesi=r2_pie./r1_pie;
-kesi_L=length(kesi);
+kesi=r2_jiequ./r1_jiequ;
+% kesi_L=length(kesi);
 % kesi=downsample(kesi,M);
+
+kesi_f=filter(b_fd,a_fd,kesi);
+
+% Wn_fd=fd_max/fs_d;
+% b_fd=fir1(48,Wn_fd,'low');
+% kesi_f=filter(b_fd,1,kesi);
+
+kesi_pie=downsample(kesi_f,M);
+kesi_L=length(kesi_pie);
 %% 加窗函数
-win = hann(kesi_L);
-kesi = kesi.*win';
+win = hamming(kesi_L);
+kesi_w = kesi_pie.*win';
 %% 自相关函数之比补零
 delta_f=0.1;
 N_pie=2^nextpow2(fs_pie/delta_f);
 % N_pie=kesi_L;
-% kesi_pie=[kesi(1:(kesi_L+1)/2) zeros(1,N_pie-kesi_L) kesi((kesi_L+1)/2+1:kesi_L)];
-kesi_pie=[kesi zeros(1,N_pie-length(kesi))];
+% kesi_pie=[kesi_w(1:(kesi_L-1)/2) zeros(1,N_pie-kesi_L+1) kesi_w((kesi_L+1)/2+1:kesi_L)];
+kesi_pie=[kesi_w zeros(1,N_pie-kesi_L)];
 % N_pie=512;
 %% 计算自相关函数之比的频谱
 Fai=fft(kesi_pie,N_pie)/N_pie;
 %% 搜索频谱，得到峰值
-[Fai_max,k_max]=max(abs(Fai));
+[Fai_max,k_max]=max(abs(Fai(1:N_pie/2)));
 fd=k_max*fs_pie/N_pie;
+
+%% 计算时差
+%% 信号频差补偿
+y2_pie=y_dn2.*exp(-1j*2*pi*fd*t_d);
+r=xcorr(y2_pie,y_dn1);
+[m,n]=max(abs(r));
+td=(n-(length(r)+1)/2)/fs_d;
+disp(fd);
+disp(td);
