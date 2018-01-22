@@ -1,5 +1,5 @@
 close all; clear all; clc;
-f0 = 1*10^9;V=[300, 0];
+f0 = 1*10^9;V=[150, 0];
 S0 = [-5,0]*10^3; S1 = [5,0]*10^3; X = [-40,40]*10^3;
 [delta_t, delta_fd]=tdoa_fdoa_param(S0, S1, X, V, f0);
 N = 5000; M = 100000;
@@ -20,11 +20,11 @@ for i = 1:N
     end
 end
 
-delta_t_max=max(max(delta_t_mat));
-delta_t_min=min(min(delta_t_mat));
-delta_fd_max=max(max(delta_fd_mat));
-delta_fd_min=min(min(delta_fd_mat));
-f1_max=max(max(f1_mat));
-f1_min=min(min(f1_mat));
-f0_max=max(max(f0_mat));
-f0_min=min(min(f0_mat));
+delta_t_max=max(max(delta_t_mat));%33.3us
+delta_t_min=min(min(delta_t_mat));%-33.3us
+delta_fd_max=max(max(delta_fd_mat));%17.6942Hz
+delta_fd_min=min(min(delta_fd_mat));%0Hz
+f1_max=max(max(f1_mat));%362Hz
+f1_min=min(min(f1_mat));%0Hz
+f0_max=max(max(f0_mat));%344Hz
+f0_min=min(min(f0_mat));%0Hz
