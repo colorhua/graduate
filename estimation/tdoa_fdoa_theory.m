@@ -1,8 +1,10 @@
 close all; clear all; clc;
 B=50*10^3;
-Bn=200*10^3;
-T=[10 20 50 100]*10^-3;
-SNR=0;
-gamma=10^(SNR/10);
+Bn=50*10^3;
+% T=[10 20 50 100]*10^-3;
+T=0.2;
+SNR=[-10 -5 0 5 10 15 20];
+gamma1=10.^(SNR/10);
+gamma=2*(2./gamma1+1./gamma1.^2).^(-1);
 sigma_tdoa=0.55./(B.*sqrt(Bn.*T.*gamma));
 sigma_fdoa=0.55./(T.*sqrt(Bn.*T.*gamma));

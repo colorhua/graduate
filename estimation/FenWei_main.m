@@ -1,12 +1,12 @@
 clc;clear all;close all;
 %% 生成原始信号
 fs_a=1*10^9;
-fs_d=200*10^3;
+fs_d=1*10^6;
 td_ini=19.87*10^-6;
-fd_ini=19.08;
+fd_ini=14.08;
 T=0.1;
 N=2;
-tao=0.999*T;
+tao=0.9*T;
 t_a=0:1/fs_a:T;
 t_d=0:1/fs_d:T;
 tao_a=0:1/fs_a:tao;
@@ -37,9 +37,9 @@ Wn=fn_h/(fs_d/2);
 % fd_max=80;
 % Wn_fd=fd_max/(fs_d/2);
 % [b_fd,a_fd]=butter(6,Wn_fd,'low');
-fd_max=40;
-Wn_fd=fd_max/fs_d;
-b_fd=fir1(96,Wn_fd,'low');
+% fd_max=40;
+% Wn_fd=fd_max/fs_d;
+% b_fd=fir1(96,Wn_fd,'low');
 %% 用自己的函数加噪声
 % NOISE1 = noisegen(y_d1,SNR);
 % NOISE2 = noisegen(y_d2,SNR);
@@ -62,12 +62,12 @@ y_dn2=y_d2+NOISE_band2;
 % b_y=fir1(48,Wn_band,'bandpass');
 % y_dn1_band=filter(b_y,1,y_dn1);
 % y_dn2_band=filter(b_y,1,y_dn2);
-Wn_low=(f_high_a+80)/fs_d;
-b_y=fir1(96,Wn_low,'low');
-y_dn1_band=filter(b_y,1,y_dn1);
-y_dn2_band=filter(b_y,1,y_dn2);
-% y_dn1_band=y_dn1;
-% y_dn2_band=y_dn2;
+% Wn_low=(f_high_a+80)/fs_d;
+% b_y=fir1(96,Wn_low,'low');
+% y_dn1_band=filter(b_y,1,y_dn1);
+% y_dn2_band=filter(b_y,1,y_dn2);
+y_dn1_band=y_dn1;
+y_dn2_band=y_dn2;
 %% 不加噪声
 % y_dn1=y_d1;
 % y_dn2=y_d2;
@@ -86,14 +86,16 @@ Y_dn2=fft(y_dn2_band,Nf);
 % Y_dn1=fftshift(Y_dn1);
 % Y_dn2=fftshift(Y_dn2);
 %% 对频域截取
-k_Nf=1:Nf;
-k_l=(f_low_a)*Nf/fs_d;
-k_h=(f_high_a+400)*Nf/fs_d;
-Y_dn1_jiequ=Y_dn1.*(k_Nf>=k_l&k_Nf<=k_h);
-Y_dn2_jiequ=Y_dn2.*(k_Nf>=k_l&k_Nf<=k_h);
+% k_Nf=1:Nf;
+% k_l=(f_low_a)*Nf/fs_d;
+% k_h=(f_high_a+400)*Nf/fs_d;
+% Y_dn1_jiequ=Y_dn1.*(k_Nf>=k_l&k_Nf<=k_h);
+% Y_dn2_jiequ=Y_dn2.*(k_Nf>=k_l&k_Nf<=k_h);
 %% 每一路信号的功率谱
-R1=conj(Y_dn1_jiequ).*Y_dn1_jiequ;
-R2=conj(Y_dn2_jiequ).*Y_dn2_jiequ;
+% R1=conj(Y_dn1_jiequ).*Y_dn1_jiequ;
+% R2=conj(Y_dn2_jiequ).*Y_dn2_jiequ;
+R1=conj(Y_dn1).*Y_dn1;
+R2=conj(Y_dn2).*Y_dn2;
 %% 每一路信号的自相关函数
 r1=ifft(R1,Nf);
 r2=ifft(R2,Nf);
@@ -108,28 +110,38 @@ r2_jiequ=r2(Nf/2+1-(L-1)/2:Nf/2+1+(L-1)/2);
 fs_pie=100;
 M=fs_d/fs_pie;
 % L_pie=Nf/M;
-% r1_pie=downsample(r1_jiequ,M);
-% r2_pie=downsample(r2_jiequ,M);
+r1_pie=downsample(r1_jiequ,M);
+r2_pie=downsample(r2_jiequ,M);
 % r1_pie=r1_jiequ;
 % r2_pie=r2_jiequ;
 %% 计算自相关函数之比
-kesi=r2_jiequ./r1_jiequ;
+% kesi=r2_jiequ./r1_jiequ;
+kesi=r2_pie./r1_pie;
 % kesi_L=length(kesi);
 % kesi=downsample(kesi,M);
 
+% kesi_f=filter(b_fd,1,kesi);
+% subplot(2,1,1)
+% plot(real(kesi));
+% axis([0,length(kesi),min(real(kesi)),max(real(kesi))]);
+% title('滤波前')
+% subplot(2,1,2)
+% plot(real(kesi_f));
+% axis([0,length(kesi_f),min(real(kesi_f)),max(real(kesi_f))]);
+% title('滤波后')
+fd_max=40;
+Wn_fd=fd_max/fs_pie;
+b_fd=fir1(96,Wn_fd,'low');
 kesi_f=filter(b_fd,1,kesi);
 
-% Wn_fd=fd_max/fs_d;
-% b_fd=fir1(48,Wn_fd,'low');
-% kesi_f=filter(b_fd,1,kesi);
-
-kesi_M=downsample(kesi_f,M);
-kesi_L=length(kesi_M);
+% kesi_M=downsample(kesi_f,M);
+kesi_L=length(kesi);
 %% 加窗函数
 win = hamming(kesi_L);
-kesi_w = kesi_M.*win';
+kesi_w = kesi_f.*win';
+% kesi_w=kesi;
 %% 自相关函数之比补零
-delta_f=0.01;
+delta_f=0.1;
 N_pie=2^nextpow2(fs_pie/delta_f);
 % N_pie=kesi_L;
 % kesi_pie=[kesi_w(1:(kesi_L-1)/2) zeros(1,N_pie-kesi_L+1) kesi_w((kesi_L+1)/2+1:kesi_L)];
@@ -154,8 +166,8 @@ y2_xz=y_dn2_band.*exp(-1j*2*pi*fd_ini*t_d);
 Y2_xz=fft(y2_xz,Nf);
 %% 频域截取？
 % Y2_xz_jiequ=Y2_xz.*(k_Nf>=k_l&k_Nf<=k_h);
-Y2_xz_jiequ=Y2_xz;
-R12=conj(Y_dn1_jiequ).*Y2_xz_jiequ;
+% Y2_xz_jiequ=Y2_xz;
+R12=conj(Y_dn1).*Y2_xz;
 delta_t=0.1*10^-6;
 %% 张文
 fs_pie_t=1/delta_t;
@@ -177,7 +189,7 @@ R12_pie=[R12_w(1:R12_M_L/2) zeros(1,Nf_pie_t-R12_M_L) R12_w(R12_M_L/2+1:R12_M_L)
 r12_pie=ifft(R12_pie,Nf_pie_t);
 r12_pie=ifftshift(r12_pie);
 [r_max,n_max]=max(abs(r12_pie));
-td=(n_max-Nf_pie_t/2+0.5)*(T_pie/Nf_pie_t);
+td=(n_max-Nf_pie_t/2)*(T_pie/(Nf_pie_t-1));
 %% mine
 %% 直接把ifft的点数增多
 % fs_pie_t=1/delta_t;

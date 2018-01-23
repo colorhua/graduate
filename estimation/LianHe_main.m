@@ -1,11 +1,10 @@
 clc;clear all;close all;
 %% 生成原始信号
 fs_a=1*10^9;
-fs_d=200*10^3;
+fs_d=1*10^6;
 td_ini=19.87*10^-6;
-fd_ini=19.08;
+fd_ini=14.08;
 T=0.1;
-N=2;
 tao=0.9*T;
 t_a=0:1/fs_a:T;
 t_d=0:1/fs_d:T;
@@ -19,7 +18,7 @@ s_a=exp(1j*2*pi*(f_low_a*tao_a+1/2*k*tao_a.^2));
 s_a=[s_a zeros(1,int32(fs_a*(T-tao)))];
 y_a1=s_a;
 y_a2=recreation(s_a, td_ini, fd_ini, fs_a);
-SNR=15;
+SNR=5;
 %% 信号采样
 y_d1=downsample(y_a1,fs_a/fs_d);
 y_d2=downsample(y_a2,fs_a/fs_d);
@@ -82,5 +81,7 @@ ele_max=CAF(r,c);
 % fd_N=l1(l2);
 td_comp=(td_max/delta_t+1-c)/fs_d
 fd_comp=(r-N)*delta_f
-choose_ambiguity_mat=CAF(r-1:r+1,c-1:c+1);
-[correct_td,correct_fd] = quadratic_surface_fitting(choose_ambiguity_mat, delta_t, delta_f, td_comp, fd_comp)
+if c>1&&c<17
+  choose_ambiguity_mat=CAF(r-1:r+1,c-1:c+1);
+  [correct_td,correct_fd] = quadratic_surface_fitting(choose_ambiguity_mat, delta_t, delta_f, td_comp, fd_comp)
+end
